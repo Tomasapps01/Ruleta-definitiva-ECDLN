@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ruleta de Equipos</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        margin: 0;
+    }
+    .equipos {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 20px;
+    }
+    .equipo {
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        width: 120px;
+        font-weight: bold;
+    }
+    .equipo input {
+        width: 40px;
+        text-align: center;
+        font-size: 16px;
+    }
+    .pink { background-color: #ff4dd2; }
+    .red { background-color: #ff3333; }
+    .blue { background-color: #007777; }
+
+    canvas {
+        margin-top: 20px;
+        background-color: white;
+        border-radius: 50%;
+    }
+    .flecha {
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 30px solid black; /* Flecha hacia abajo apuntando al centro */
+        margin: 10px auto -25px;
+    }
+    button {
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #ff66d9;
+        color: white;
+    }
+    #modal {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        visibility: hidden;
+    }
+    #modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        min-width: 200px;
+    }
+</style>
+</head>
+<body>
+
+<div class="equipos">
+    <div class="equipo pink">Grupo 1<br>
+        <input type="number" value="0">
+    </div>
+    <div class="equipo red">Grupo 2<br>
+        <input type="number" value="0">
+    </div>
+    <div class="equipo blue">Grupo 3<br>
+        <input type="number" value="0">
+    </div>
+</div>
+
+<div class="flecha"></div>
+<canvas id="ruleta" width="400" height="400"></canvas>
+<br>
+<button onclick="girar()">Girar</button>
+
+<div id="modal">
+    <div id="modal-content">
+        <h2 id="resultado"></h2>
+        <button onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<script>
+const opciones = [
+    { label: 'Pregunta', color: '#ff66d9' },
+    { label: '¿Quién?', color: '#ffff66' },
+    { label: 'Sí y No', color: '#6666ff' },
+    { label: 'Malo', color: '#ff4d4d' },
+    { label: 'Pregunta', color: '#ff66d9' },
+    { label: '¿Quién?', color: '#ffff66' },
+    { label: 'Sí y No', color: '#6666ff' },
+    { label: 'Bueno', color: '#66ff66' }
+];
+
+let ctx = document.getElementById("ruleta").getContext("2d");
+let anguloActual = 0;
+
+function dibujarRuleta() {
+    let angulo = (2 * Math.PI) / opciones.length;
+    for (let i = 0; i < opciones.length; i++) {
+        let inicio = anguloActual + i * angulo;
+        ctx.beginPath();
+        ctx.moveTo(200, 200);
+        ctx.arc(200, 200, 200, inicio, inicio + angulo);
+        ctx.fillStyle = opciones[i].color;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(200, 200);
+        ctx.rotate(inicio + angulo / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.fillText(opciones[i].label, 180, 5);
+        ctx.restore();
+    }
+}
+
+function girar() {
+    let giro = Math.random() * 360 + 1440; // min 4 vueltas
+    let rad = giro * Math.PI / 180;
+    let inicio = anguloActual;
+    let fin = anguloActual + rad;
+    let tiempoInicio = null;
+
+    function animar(t) {
+        if (!tiempoInicio) tiempoInicio = t;
+        let progreso = (t - tiempoInicio) / 3000;
+        if (progreso > 1) progreso = 1;
+
+        anguloActual = inicio + (fin - inicio) * easeOutCubic(progreso);
+        ctx.clearRect(0, 0, 400, 400);
+        dibujarRuleta();
+
+        if (progreso < 1) {
+            requestAnimationFrame(animar);
+        } else {
+            mostrarResultado();
+        }
+    }
+    requestAnimationFrame(animar);
+}
+
+function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
+}
+
+function mostrarResultado() {
+    let angulo = (2 * Math.PI) / opciones.length;
+    let anguloFlecha = ((3 * Math.PI / 2) - anguloActual) % (2 * Math.PI);
+    if (anguloFlecha < 0) anguloFlecha += 2 * Math.PI;
+    let indice = Math.floor(anguloFlecha / angulo);
+    document.getElementById("resultado").textContent = opciones[indice].label;
+    document.getElementById("modal").style.visibility = "visible";
+}
+
+function cerrarModal() {
+    document.getElementById("modal").style.visibility = "hidden";
+}
+
+dibujarRuleta();
+</script>
+
+</body>
+</html>
