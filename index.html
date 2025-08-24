@@ -138,7 +138,7 @@ function dibujarRuleta() {
 }
 
 function girar() {
-    let giro = Math.random() * 360 + 1440; // min 4 vueltas
+    let giro = Math.random() * 360 + 2520; // min 4 vueltas
     let rad = giro * Math.PI / 180;
     let inicio = anguloActual;
     let fin = anguloActual + rad;
@@ -146,7 +146,7 @@ function girar() {
 
     function animar(t) {
         if (!tiempoInicio) tiempoInicio = t;
-        let progreso = (t - tiempoInicio) / 3000;
+        let progreso = (t - tiempoInicio) / 7000;
         if (progreso > 1) progreso = 1;
 
         anguloActual = inicio + (fin - inicio) * easeOutCubic(progreso);
@@ -184,3 +184,4 @@ dibujarRuleta();
 
 </body>
 </html>
+
